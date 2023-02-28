@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"name": "foxs2_ncs_test",
+			"path": "../../../../../thinkr_ncs_projects/samples/foxs2_ncs_test"
+		},
+		{
+			"path": "../../../../../v2.2.0"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../../../v2.2.0/zephyr/boards/arm/nrf52dk_nrf52832"
+		},
+		{
+			"path": "../../../../../v2.2.0/nrf/boards/arm/nrf52kbd_nrf52832"
+		}
+	],
+	"settings": {
+		"nrf-connect.applications": [
+			"${workspaceFolder}"
+		],
+		"files.associations": {
+			"dk_buttons_and_leds.h": "c"
+		}
+	}
+}
