@@ -1,0 +1,297 @@
+&{/aliases}{
+    /delete-property/ led0;
+    /delete-property/ led1;
+    /delete-property/ led2;
+    /delete-property/ led3;
+    /delete-property/ sw0;
+    /delete-property/ sw1;
+    /delete-property/ sw2;
+    /delete-property/ sw3;
+	/delete-property/ pwm-led0;
+	/delete-property/ bootloader-led0;
+	/delete-property/ mcuboot-button0;
+	/delete-property/ mcuboot-led0;
+	button-up   = &i_input_3;
+	button-down = &i_input_4;
+	button-stop = &i_input_5;
+};
+
+&{/leds}{
+    led0: led_0 {
+        status = "disabled";
+    };
+    led1: led_1 {
+        status = "disabled";
+    };
+    led2: led_2 {
+        status = "disabled";
+    };
+    led3: led_3 {
+        status = "disabled";
+    };
+};
+
+/ {
+	pwmleds {
+		/delete-node/ pwm_led_0;
+		pwm_bell: p_bell {
+			pwms = <&pwm0 0 PWM_MSEC(20) PWM_POLARITY_INVERTED>;
+		};
+	};
+};
+
+&{/buttons}{
+	button0: button_0 {
+    	status = "disabled";
+	};
+	button1: button_1 {
+    	status = "disabled";
+	};
+	button2: button_2 {
+    	status = "disabled";
+	};
+	button3: button_3 {
+    	status = "disabled";
+	};
+};
+
+/{
+	outputs {
+		compatible = "gpio-leds";
+		o_relay_stop: relay_stop {
+			gpios = < &gpio0 16 GPIO_ACTIVE_LOW >;
+			label = "RELAY_STOP";
+		};
+		o_relay_up: relay_up {
+			gpios = < &gpio0 15 GPIO_ACTIVE_LOW >;
+			label = "RELAY_UP";
+		};
+		o_relay_ldown: relay_down {
+			gpios = < &gpio0 17 GPIO_ACTIVE_LOW >;
+			label = "RELAY_DOWN";
+		};
+		// o_led: led {
+		// 	gpios = < &gpio0 12 GPIO_ACTIVE_LOW >;
+		// 	label = "USER_LED";
+		// };
+		o_wifi_power: wifi_power {
+			gpios = < &gpio0 18 GPIO_ACTIVE_HIGH >;
+			label = "WIFI_POWER";
+		};
+		o_wifi_enable: wifi_enable {
+			gpios = < &gpio0 20 GPIO_ACTIVE_LOW >;
+			label = "WIFI_ENABLE";
+		};
+		o_bat_power: bat_power{
+			gpios = < &gpio0 30 GPIO_ACTIVE_HIGH>;
+			label = "BAT_POWER";
+		};
+	};
+
+	b_leds {
+		compatible = "gpio-leds";
+		o_led: led {
+			gpios = < &gpio0 12 GPIO_ACTIVE_HIGH >;
+			label = "USER_LED";
+		};
+	};
+	
+	inputs {
+		compatible = "gpio-keys";
+		// i_sig_up: signal_up {
+		// 	gpios = < &gpio0 14 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+		// 	label = "SIGNAL_UP";
+		// };
+		// i_sig_down: signal_down {
+		// 	gpios = < &gpio0 13 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+		// 	label = "SIGNAL_DOWN";
+		// };
+		// i_button: button {
+		// 	gpios = < &gpio0 24 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+		// 	label = "BUTTON";
+		// };
+		i_input_1: input_1 {
+			gpios = < &gpio0 25 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "INPUT_1";
+		};
+		i_input_2: input_2 {
+			gpios = < &gpio0 26 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "INPUT_2";
+		};
+		i_input_3: input_3 {
+			gpios = < &gpio0 27 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "INPUT_3";
+		};
+		i_input_4: input_4 {
+			gpios = < &gpio0 28 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "INPUT_4";
+		};
+		i_input_5: input_5 {
+			gpios = < &gpio0 29 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "INPUT_5";
+		};
+		
+		i_rt_sqw: rt_sqw {
+			gpios = < &gpio0 6 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "RT_SQW";
+		};
+		i_rt_irq: rt_irq {
+			gpios = < &gpio0 5 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "RT_IRQ_OUT";
+		};
+		i_wifi_sync: wifi_sync {
+			gpios = < &gpio0 21 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "WIFI_SYNC";
+		};
+		i_pwr_bkup: pwr_bkup {
+			gpios = < &gpio0 11 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "PWR_BKUP";
+		};
+	};
+
+	b_buttons {
+		compatible = "gpio-keys";
+		button: button_onboard {
+			gpios = < &gpio0 24 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "BTN_ONBOARD";
+		};
+		button_up_df: button_up {
+			status = "disabled";
+			gpios = < &gpio0 14 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "BTN_UP";
+		};
+		button_down_df: button_down {
+			status = "disabled";
+			gpios = < &gpio0 13 (GPIO_PULL_UP | GPIO_ACTIVE_LOW) >;
+			label = "BTN_DOWN";
+		};
+	};
+}; 
+
+//---------------------- 
+&uart0 {
+	status = "disabled";
+};
+
+&uart0_default {
+	group1 {
+		psels = <NRF_PSEL(UART_TX, 0, 22)>,
+			<NRF_PSEL(UART_RX, 0, 19)>;
+	};
+};
+
+&uart0_sleep {
+	group1 {
+		psels = <NRF_PSEL(UART_TX, 0, 22)>,
+			<NRF_PSEL(UART_RX, 0, 19)>;
+	};
+};
+
+//----------------------
+
+&i2c0 {
+	status = "disabled";
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+//----------------------
+
+&pwm0_default {
+	group1 {
+		psels = <NRF_PSEL(PWM_OUT0, 0, 31)>;
+	};
+};
+
+&pwm0_sleep {
+	group1 {
+		psels = <NRF_PSEL(PWM_OUT0, 0, 31)>;
+	};
+};
+
+//----------------------
+
+&spi0{
+	status = "disabled";
+};
+
+&spi1{
+	status = "disabled";
+};
+
+&spi2{
+	status = "disabled";
+};
+
+&spi0_default {
+	/delete-node/ group1;
+};
+
+&spi0_sleep {
+	/delete-node/ group1;
+};
+
+&spi1_default {
+	/delete-node/ group1;
+};
+
+&spi1_sleep {
+	/delete-node/ group1;
+};
+
+&spi2_default {
+	/delete-node/ group1;
+};
+
+&spi2_sleep {
+	/delete-node/ group1;
+};
+
+//----------------------
+
+&flash0{
+	partitions {
+		/delete-node/ partition@c000;
+		/delete-node/ partition@70000;
+		/delete-node/ partition@7a000;
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = < 0x0 0x28000 >;
+		};
+		slot0_partition: partition@28000 {
+			label = "image-0";
+			reg = < 0x28000 0x4d000 >;
+		};
+		storage_partition: partition@75000 {
+			label = "storage";
+			reg = < 0x75000 0xa000 >;
+		};
+	};
+};
+
+&arduino_header {
+    gpio-map = <0 0 &gpio0 3 0>,
+               <1 0 &gpio0 4 0>,
+               <2 0 &gpio0 28 0>,
+               <3 0 &gpio0 29 0>,
+               <4 0 &gpio0 30 0>,
+               <5 0 &gpio0 31 0>,
+               <6 0 &gpio0 11 0>,
+               <7 0 &gpio0 12 0>,
+               <8 0 &gpio0 13 0>,
+               <9 0 &gpio0 14 0>,
+               <10 0 &gpio0 15 0>,
+               <11 0 &gpio0 16 0>,
+               <12 0 &gpio0 17 0>,
+               <13 0 &gpio0 18 0>,
+               <14 0 &gpio0 19 0>,
+               <15 0 &gpio0 20 0>,
+               <16 0 &gpio0 22 0>,
+               <17 0 &gpio0 23 0>,
+               <18 0 &gpio0 24 0>,
+               <19 0 &gpio0 25 0>,
+               <20 0 &gpio0 26 0>,
+               <21 0 &gpio0 27 0>;
+};
