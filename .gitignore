@@ -1,7 +1,10 @@
 # editors
 *.swp
 *.zip
+*.json
 *~
+
+.vscode
 
 # build
 /build*/
