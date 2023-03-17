@@ -5,6 +5,7 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/logging/log.h>
 #include <nrfx.h>
+#include "buzzer.h"
 #include "bsp.h"
 
 LOG_MODULE_REGISTER(bsp, 2);
@@ -16,24 +17,29 @@ LOG_MODULE_REGISTER(bsp, 2);
 // #define INPUTS_NODE DT_PATH(inputs)
 
 #define GPIO_SPEC_AND_COMMA(button_or_led) GPIO_DT_SPEC_GET(button_or_led, gpios),
-#define GPIO_SPEC(node_id) GPIO_DT_SPEC_GET_OR(node_id, gpios, {0})
 
-#define BUTTON_UP_NODE		DT_ALIAS(button-up)
-#define BUTTON_DOWN_NODE	DT_ALIAS(button-down)
-#define BUTTON_STOP_NODE	DT_ALIAS(button-stop)
+// #define BUTTON_NUM	ARRAY_SIZE(buttons)
+#define BUTTON_NUM	4
+
+// #define OUTPUT_NUM		ARRAY_SIZE(leds)
+#define OUTPUT_NUM	4
 
 static const struct gpio_dt_spec buttons[] = {
-// #if DT_NODE_EXISTS(BUTTONS_NODE)
-	DT_FOREACH_CHILD(BUTTONS_NODE, GPIO_SPEC_AND_COMMA)
-	GPIO_DT_SPEC_GET(BUTTON_UP_NODE, gpios)
-	GPIO_DT_SPEC_GET(BUTTON_DOWN_NODE, gpios)
-	// GPIO_SPEC(BUTTON_UP_NODE)
-	// GPIO_SPEC(BUTTON_DOWN_NODE)
-	// #if DT_NODE_EXISTS(BUTTON_STOP_NODE)
-	// GPIO_SPEC(BUTTON_STOP_NODE)
-	// #endif
-// #endif
+	// DT_FOREACH_CHILD(BUTTONS_NODE, GPIO_SPEC_AND_COMMA)
+	GPIO_DT_SPEC_GET(DT_NODELABEL(button), gpios),
+#if DT_NODE_EXISTS(DT_ALIAS(button_up))
+	GPIO_DT_SPEC_GET(DT_ALIAS(button_up), gpios),
+#endif
+#if DT_NODE_EXISTS(DT_ALIAS(button_down))
+	GPIO_DT_SPEC_GET(DT_ALIAS(button_down), gpios),
+#endif
+#if DT_NODE_EXISTS(DT_ALIAS(button_stop))
+	GPIO_DT_SPEC_GET(DT_ALIAS(button_stop), gpios),
+#endif
 };
+
+
+
 
 static const struct gpio_dt_spec leds[] = {
 // #if DT_NODE_EXISTS(LEDS_NODE)
@@ -61,14 +67,20 @@ static struct k_mutex button_handler_mut;
 
 void BSP::InitGpio()
 {
+	int ret;
 	InitOutputsAndLeds();
+	ret = BuzzerInit();
+	if (ret) {
+		LOG_ERR("Buzzer init failed");
+		return;
+	}
 }
 
 int BSP::InitOutputsAndLeds()
 {
     int err;
 
-	for (size_t i = 0; i < ARRAY_SIZE(leds); i++) {
+	for (size_t i = 0; i < OUTPUT_NUM; i++) {
 		err = gpio_pin_configure_dt(&leds[i], GPIO_OUTPUT);
 		if (err) {
 			LOG_ERR("Cannot configure LED gpio");
@@ -76,7 +88,7 @@ int BSP::InitOutputsAndLeds()
 		}
 	}
 
-	SetOutputsState(DK_NO_LEDS_MSK, DK_ALL_LEDS_MSK);
+	SetOutputsState(DK_NO_LEDS_MSK, DK_ALL_OUTPUTS_MSK);
     return err;
 }
 
@@ -89,7 +101,7 @@ int BSP::callback_ctrl(bool enable)
 	/* This must be done with irqs disabled to avoid pin callback
 	 * being fired before others are still not activated.
 	 */
-	for (size_t i = 0; (i < ARRAY_SIZE(buttons)) && !err; i++) {
+	for (size_t i = 0; (i < BUTTON_NUM) && !err; i++) {
 		err = gpio_pin_interrupt_configure_dt(&buttons[i], flags);
 	}
 
@@ -99,7 +111,7 @@ int BSP::callback_ctrl(bool enable)
 uint32_t BSP::get_buttons(void)
 {
 	uint32_t ret = 0;
-	for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {
+	for (size_t i = 0; i < BUTTON_NUM; i++) {
 		int val;
 
 		val = gpio_pin_get_dt(&buttons[i]);
@@ -224,7 +236,7 @@ int BSP::InitInputsAndButtons(button_handler_t button_handler)
 	}
 #endif
 
-	for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {
+	for (size_t i = 0; i < BUTTON_NUM; i++) {
 		/* Enable pull resistor towards the inactive voltage. */
 		gpio_flags_t flags =
 			buttons[i].dt_flags & GPIO_ACTIVE_LOW ?
@@ -239,7 +251,7 @@ int BSP::InitInputsAndButtons(button_handler_t button_handler)
 
 	uint32_t pin_mask = 0;
 
-	for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {
+	for (size_t i = 0; i < BUTTON_NUM; i++) {
 		/* Module starts in scanning mode and will switch to
 		 * callback mode if no button is pressed.
 		 */
@@ -255,7 +267,7 @@ int BSP::InitInputsAndButtons(button_handler_t button_handler)
 
 	gpio_init_callback(&gpio_cb, button_pressed, pin_mask);
 
-	for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {
+	for (size_t i = 0; i < BUTTON_NUM; i++) {
 		err = gpio_add_callback(buttons[i].port, &gpio_cb);
 		if (err) {
 			LOG_ERR("Cannot add callback");
@@ -285,19 +297,19 @@ void BSP::Init()
 
 //-----
 
-int BSP::SetOutputsState(uint32_t leds_on_mask, uint32_t leds_off_mask)
+int BSP::SetOutputsState(uint32_t outputs_on_mask, uint32_t outputs_off_mask)
 {
-	if ((leds_on_mask & ~DK_ALL_LEDS_MSK) != 0 ||
-	   (leds_off_mask & ~DK_ALL_LEDS_MSK) != 0) {
+	if ((outputs_on_mask & ~DK_ALL_OUTPUTS_MSK) != 0 ||
+	   (outputs_off_mask & ~DK_ALL_OUTPUTS_MSK) != 0) {
 		return -EINVAL;
 	}
 
-	for (size_t i = 0; i < ARRAY_SIZE(leds); i++) {
+	for (size_t i = 0; i < OUTPUT_NUM; i++) {
 		int val, err;
 
-		if (BIT(i) & leds_on_mask) {
+		if (BIT(i) & outputs_on_mask) {
 			val = 1;
-		} else if (BIT(i) & leds_off_mask) {
+		} else if (BIT(i) & outputs_off_mask) {
 			val = 0;
 		} else {
 			continue;
@@ -305,7 +317,7 @@ int BSP::SetOutputsState(uint32_t leds_on_mask, uint32_t leds_off_mask)
 
 		err = gpio_pin_set_dt(&leds[i], val);
 		if (err) {
-			LOG_ERR("Cannot write LED gpio");
+			LOG_ERR("Cannot write gpio");
 			return err;
 		}
 	}
@@ -313,22 +325,22 @@ int BSP::SetOutputsState(uint32_t leds_on_mask, uint32_t leds_off_mask)
 	return 0;
 }
 
-int BSP::SetOutputs(uint32_t leds)
+int BSP::SetOutputs(uint32_t outputs)
 {
-	return SetOutputsState(leds, DK_ALL_LEDS_MSK);
+	return SetOutputsState(outputs, DK_ALL_OUTPUTS_MSK);
 }
 
-int BSP::SetOutput(uint8_t led_idx, uint32_t val)
+int BSP::SetOutput(uint8_t output_idx, uint32_t val)
 {
 	int err;
 
-	if (led_idx >= ARRAY_SIZE(leds)) {
-		LOG_ERR("LED index out of the range");
+	if (output_idx >= OUTPUT_NUM) {
+		LOG_ERR("OUTPUT index out of the range");
 		return -EINVAL;
 	}
-	err = gpio_pin_set_dt(&leds[led_idx], val);
+	err = gpio_pin_set_dt(&leds[output_idx], val);
 	if (err) {
-		LOG_ERR("Cannot write LED gpio");
+		LOG_ERR("Cannot write OUTPUT gpio");
 	}
 	return err;
 }
@@ -344,7 +356,6 @@ int BSP::dk_set_led_off(uint8_t led_idx)
 }
 //-----
 
-
 void BSP::dk_read_buttons(uint32_t *button_state, uint32_t *has_changed)
 {
 	static uint32_t last_state;
@@ -359,4 +370,9 @@ void BSP::dk_read_buttons(uint32_t *button_state, uint32_t *has_changed)
 	}
 
 	last_state = current_state;
+}
+
+uint32_t BSP::dk_get_buttons(void)
+{
+	return atomic_get(&my_buttons);
 }

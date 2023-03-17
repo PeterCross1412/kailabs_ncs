@@ -7,31 +7,38 @@
 class BSP {
 public:
     #define DK_NO_LEDS_MSK    (0)
-    #define DK_LED1           0
-    // #define DK_LED2           1
-    // #define DK_LED3           2
-    // #define DK_LED4           3
-    #define DK_LED1_MSK       BIT(DK_LED1)
-    // #define DK_LED2_MSK       BIT(DK_LED2)
-    // #define DK_LED3_MSK       BIT(DK_LED3)
-    // #define DK_LED4_MSK       BIT(DK_LED4)
-    // #define DK_ALL_LEDS_MSK   (DK_LED1_MSK | DK_LED2_MSK |\
-    //                            DK_LED3_MSK | DK_LED4_MSK)
+    #define LED_ONBOARD         0
+    #define RELAY_UP            1
+    #define RELAY_DOWN          2
+    #define RELAY_STOP          3
+    #define LED_ONBOARD_MSK     BIT(LED_ONBOARD)
+    #define RELAY_UP_MSK        BIT(RELAY_UP)
+    #define RELAY_DOWN_MSK      BIT(RELAY_DOWN)
+    #define RELAY_STOP_MSK      BIT(RELAY_STOP)
 
-    #define DK_ALL_LEDS_MSK (DK_LED1_MSK)
+    #define DK_ALL_LEDS_MSK     (LED_ONBOARD_MSK)
+    #define DK_ALL_RELAYS_MSK   (RELAY_UP_MSK | RELAY_DOWN_MSK |\
+                                 RELAY_STOP_MSK)
+    #define DK_ALL_OUTPUTS_MSK  (DK_ALL_LEDS_MSK | DK_ALL_RELAYS_MSK)
+    //---------------------------------------------------------------
+    #define NO_BTNS_MSK   (0)
+    // typedef enum btn_t {
+    //     BTN_ONBOARD = 0,
+    //     BTN_UP,
+    //     BTN_DOWN,
+    //     BTN_STOP
+    // }btn_t;
+    #define BTN_ONBOARD 0
+    #define BTN_UP      1
+    #define BTN_DOWN    2
+    #define BTN_STOP    3
 
-    #define DK_NO_BTNS_MSK   (0)
-    #define DK_BTN1          0
-    #define DK_BTN2          1
-    #define DK_BTN3          2
-    // #define DK_BTN4          3
-    #define DK_BTN1_MSK      BIT(DK_BTN1)
-    #define DK_BTN2_MSK      BIT(DK_BTN2)
-    #define DK_BTN3_MSK      BIT(DK_BTN3)
-    // #define DK_BTN4_MSK      BIT(DK_BTN4)
-    // #define DK_ALL_BTNS_MSK  (DK_BTN1_MSK | DK_BTN2_MSK | \
-    //             DK_BTN3_MSK | DK_BTN4_MSK)
-    #define DK_ALL_BTNS_MSK  (DK_BTN1_MSK | DK_BTN2_MSK | DK_BTN3_MSK)
+    #define BTN_ONBOARD_MSK     BIT(BTN_ONBOARD)
+    #define BTN_UP_MSK          BIT(BTN_UP)
+    #define BTN_DOWN_MSK        BIT(BTN_DOWN)
+    #define BTN_STOP_MSK        BIT(BTN_STOP)
+
+    #define DK_ALL_BTNS_MSK  (BTN_ONBOARD_MSK | BTN_UP_MSK | BTN_DOWN_MSK | BTN_STOP_MSK)
 
     /**
      * @typedef button_handler_t
@@ -56,25 +63,25 @@ public:
 
     /** @brief Set value of LED pins as specified in two bitmasks.
      *
-     *  @param  leds_on_mask  Bitmask that defines which LEDs to turn on.
-     *                        If this bitmask overlaps with @p leds_off_mask,
-     *                        @p leds_on_mask has priority.
+     *  @param  outputs_on_mask  Bitmask that defines which LEDs to turn on.
+     *                        If this bitmask overlaps with @p outputs_off_mask,
+     *                        @p outputs_on_mask has priority.
      *
-     *  @param  leds_off_mask Bitmask that defines which LEDs to turn off.
-     *                        If this bitmask overlaps with @p leds_on_mask,
-     *                        @p leds_on_mask has priority.
+     *  @param  outputs_off_mask Bitmask that defines which LEDs to turn off.
+     *                        If this bitmask overlaps with @p outputs_on_mask,
+     *                        @p outputs_on_mask has priority.
      *
      *  @retval 0           If the operation was successful.
      *                      Otherwise, a (negative) error code is returned.
      */
-    static int SetOutputsState(uint32_t leds_on_mask, uint32_t leds_off_mask);
-    static int SetOutputs(uint32_t leds);
+    static int SetOutputsState(uint32_t outputs_on_mask, uint32_t outputs_off_mask);
+    static int SetOutputs(uint32_t outputs);
 
     /** @brief Set a single LED value.
      *
      *  This function turns a single LED on or off.
      *
-     *  @param led_idx Index of the LED.
+     *  @param output_idx Index of the LED.
      *  @param val     Value for the LED: 1 - turn on, 0 - turn off
      *
      *  @retval 0           If the operation was successful.
@@ -82,7 +89,7 @@ public:
      *
      *  @sa dk_set_led_on, dk_set_led_off
      */
-    static int SetOutput(uint8_t led_idx, uint32_t val);
+    static int SetOutput(uint8_t output_idx, uint32_t val);
 
     /** @brief Turn a single LED on.
      *
@@ -103,10 +110,20 @@ public:
     static int dk_set_led_off(uint8_t led_idx);
 
 
+    // static void dk_read_buttons(uint32_t *button_state, uint32_t *has_changed);
 
-
-
+    /** @brief Read current button states.
+     *
+     *  @param button_state Bitmask of button states.
+     *  @param has_changed Bitmask that shows which buttons have changed.
+     */
     static void dk_read_buttons(uint32_t *button_state, uint32_t *has_changed);
+
+    /** @brief Get current button state from internal variable.
+     *
+     *  @return Bitmask of button states.
+     */
+    static uint32_t dk_get_buttons(void);
 
 private:
     static int callback_ctrl(bool enable);

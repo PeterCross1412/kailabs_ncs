@@ -24,29 +24,57 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
 static void ButtonEventHandler(uint32_t buttonState, uint32_t hasChanged)
 {
-	if (hasChanged & DK_BTN1_MSK) {
-		if (buttonState & DK_BTN1_MSK)
+	if (hasChanged & BTN_ONBOARD_MSK) {
+		if (buttonState & BTN_ONBOARD_MSK)
 		{
-			LOG_INF("Button 1 press");
+			LOG_INF("Button Onboard press");
 			// BSP::SetOutputs(DK_LED1_MSK);
-			BSP::dk_set_led_on(DK_LED1);
+			BSP::dk_set_led_on(LED_ONBOARD);
 		}
 		else
 		{
-			LOG_INF("Button 1 release");
+			LOG_INF("Button Onboard release");
 			// BSP::SetOutputs(DK_NO_LEDS_MSK);
-			BSP::dk_set_led_off(DK_LED1);
+			BSP::dk_set_led_off(LED_ONBOARD);
 		}
 
-		// BSP::SetOutput(DK_LED1, (bool)(hasChanged & DK_BTN1_MSK));
+		// BSP::SetOutput(LED_ONBOARD, (bool)(buttonState & BTN_ONBOARD_MSK));
 	}
 	else
-	if (hasChanged & DK_BTN2_MSK) {
-		LOG_INF("Button 2");
+	if (hasChanged & BTN_UP_MSK) {
+		if (buttonState & BTN_UP_MSK)
+		{
+			LOG_INF("Button UP press");
+		} else
+		{
+			LOG_INF("Button UP release");
+		}
+
+		BSP::SetOutput(RELAY_UP, (bool)(buttonState & RELAY_UP_MSK));
 	}
 	else
-	if (hasChanged & DK_BTN3_MSK) {
-		LOG_INF("Button 3");
+	if (hasChanged & BTN_DOWN_MSK) {
+		if (buttonState & BTN_DOWN_MSK)
+		{
+			LOG_INF("Button DOWN press");
+		} else
+		{
+			LOG_INF("Button DOWN release");
+		}
+
+		BSP::SetOutput(RELAY_DOWN, (bool)(buttonState & RELAY_DOWN_MSK));
+	}
+	else
+	if (hasChanged & BTN_STOP_MSK) {
+		if (buttonState & BTN_STOP_MSK)
+		{
+			LOG_INF("Button STOP press");
+		} else
+		{
+			LOG_INF("Button STOP release");
+		}
+
+		BSP::SetOutput(RELAY_STOP, (bool)(buttonState & RELAY_STOP_MSK));
 	}
 }
 
