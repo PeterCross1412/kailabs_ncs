@@ -1,0 +1,3 @@
+[submodule "projects/demo/klbs_ble_new_sec_demo"]
+	path = projects/demo/klbs_ble_new_sec_demo
+	url = ./
