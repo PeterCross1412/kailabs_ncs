@@ -1,0 +1,90 @@
+// Copyright (c) 2023 Nordic Semiconductor ASA
+// SPDX-License-Identifier: Apache-2.0
+
+/dts-v1/;
+#include <nordic/nrf52832_qfaa.dtsi>
+
+/ {
+	model = "Pi Remote v2";
+	compatible = "kailabs,pi-remote-v2";
+
+	chosen {
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,code-partition = &slot0_partition;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		red_led: led_1 {
+			gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+			label = "Red LED 1";
+		};
+		green_led: led_2 {
+			gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+			label = "Green LED 2";
+		};
+	};
+
+	buttons {
+		compatible = "gpio-keys";
+		button: button_0 {
+			gpios = <&gpio0 20 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
+			label = "Button";
+		};
+	};
+
+		/* These aliases are provided for compatibility with samples */
+		aliases {
+			led0 = &green_led;
+			led1 = &red_led;
+			// pwm-led0 = &pwm_led0;
+			sw0 = &button;
+			// bootloader-led0 = &led0;
+			// mcuboot-button0 = &button0;
+			// mcuboot-led0 = &led0;
+			// watchdog0 = &wdt0;
+		};
+};
+
+&adc {
+	status = "okay";
+};
+
+&gpiote {
+	status = "okay";
+};
+
+&gpio0 {
+	status = "okay";
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		boot_partition: partition@0 {
+			label = "mcuboot";
+			reg = <0x0 0xc000>;
+		};
+		slot0_partition: partition@c000 {
+			label = "image-0";
+			reg = <0xc000 0x12000>;
+		};
+		slot1_partition: partition@1e000 {
+			label = "image-1";
+			reg = <0x1e000 0x12000>;
+		};
+		scratch_partition: partition@30000 {
+			label = "image-scratch";
+			reg = <0x30000 0xa000>;
+		};
+		storage_partition: partition@3a000 {
+			label = "storage";
+			reg = <0x3a000 0x6000>;
+		};
+	};
+};
+
