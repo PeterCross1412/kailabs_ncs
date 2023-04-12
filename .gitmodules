@@ -1,3 +1,6 @@
 [submodule "projects/demo/klbs_ble_new_sec_demo"]
 	path = projects/demo/klbs_ble_new_sec_demo
 	url = git@github.com:ngocna3593/klbs_ble_new_sec_demo.git
+[submodule "projects/rhino_rmk_ncs"]
+	path = projects/rhino_rmk_ncs
+	url = git@github.com:ngocna3593/rd_rhino_rmk_ncs.git
